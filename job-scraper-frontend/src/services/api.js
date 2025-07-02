@@ -12,11 +12,13 @@ export const apiService = {
   },
 
   async scrapeJobs(site, keyword = '') {
-    const url = new URL(`${API_BASE_URL}/api/scrape`);
-    url.searchParams.append('site', site);
+    const params = new URLSearchParams();
+    params.append('site', site);
     if (keyword) {
-      url.searchParams.append('keyword', keyword);
+      params.append('keyword', keyword);
     }
+    
+    const url = `${API_BASE_URL}/api/scrape?${params.toString()}`;
     
     const response = await fetch(url);
     if (!response.ok) {
