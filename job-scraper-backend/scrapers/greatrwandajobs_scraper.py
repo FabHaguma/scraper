@@ -2,12 +2,58 @@
 
 import requests
 import re
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from .base_scraper import BaseScraper
 from .keywords import DEFAULT_KEYWORDS
 
 class GreatRwandaJobsScraper(BaseScraper):
     """A scraper for 'greatrwandajobs.com' job listings."""
+
+    def _is_deadline_valid(self, deadline_date_str):
+        """
+        Check if the job deadline is either future or within 1 month from today.
+        Returns True if the deadline is valid, False otherwise.
+        """
+        if deadline_date_str == "N/A" or not deadline_date_str.strip():
+            return True  # Include jobs without deadline information
+        
+        try:
+            # Try to parse different date formats commonly used
+            date_formats = [
+                "%A, %B %d %Y",  # e.g., "Wednesday, May 28 2025"
+                "%A, %b %d %Y",  # e.g., "Wednesday, May 28 2025" (short month)
+                "%d %B %Y",      # e.g., "15 July 2025"
+                "%d %b %Y",      # e.g., "15 Jul 2025"
+                "%d-%m-%Y",      # e.g., "15-07-2025"
+                "%d/%m/%Y",      # e.g., "15/07/2025"
+                "%Y-%m-%d",      # e.g., "2025-07-15"
+                "%B %d, %Y",     # e.g., "July 15, 2025"
+                "%b %d, %Y",     # e.g., "Jul 15, 2025"
+            ]
+            
+            deadline_date = None
+            for date_format in date_formats:
+                try:
+                    deadline_date = datetime.strptime(deadline_date_str.strip(), date_format)
+                    break
+                except ValueError:
+                    continue
+            
+            if deadline_date is None:
+                print(f"Warning: Could not parse date format: {deadline_date_str}")
+                return True  # Include jobs with unparseable dates
+            
+            # Calculate the threshold date (1 month ago from today)
+            today = datetime.now()
+            one_month_ago = today - timedelta(days=30)
+            
+            # Include jobs whose deadline is either in the future or within the last month
+            return deadline_date >= one_month_ago
+            
+        except Exception as e:
+            print(f"Error parsing deadline date '{deadline_date_str}': {e}")
+            return True  # Include jobs with date parsing errors
 
     def _fetch_categories_from_website(self):
         """
@@ -84,10 +130,9 @@ class GreatRwandaJobsScraper(BaseScraper):
             # Check if any default keyword is in the category name
             if re.search(keyword_pattern, category_name, re.IGNORECASE):
                 # Format category name for URL:
-                # 1. Remove " jobs in Rwanda" suffix
-                # 2. Make it lowercase
-                # 3. Remove special characters except spaces, hyphens, and slashes
-                # 4. Replace spaces and slashes with hyphens
+                # 1. Make it lowercase
+                # 2. Remove special characters except spaces, hyphens, and slashes
+                # 3. Replace spaces and slashes with hyphens
                 formatted_name = category_name.lower()
                 # Remove special characters and replace spaces/slashes with hyphens
                 formatted_name = re.sub(r'[^a-z0-9\s/-]', '', formatted_name)
@@ -209,26 +254,28 @@ class GreatRwandaJobsScraper(BaseScraper):
                     company_names.add(company)
 
         print(f"Total jobs collected: {len(all_jobs)}")
-        # Filter jobs based on relevance to software development
+        # Filter jobs based on relevance to software development and deadline validity
         if keyword:
-            # If a specific keyword is provided, filter by that keyword
+            # If a specific keyword is provided, filter by that keyword and deadline
             pattern = r'\b' + re.escape(keyword) + r'\b'
             filtered_jobs = [
                 job for job in all_jobs 
-                if re.search(pattern, job['title'], re.IGNORECASE) or 
-                   re.search(pattern, job['category'], re.IGNORECASE)
+                if (re.search(pattern, job['title'], re.IGNORECASE) or 
+                    re.search(pattern, job['category'], re.IGNORECASE)) and
+                   self._is_deadline_valid(job['deadline_date'])
             ]
         else:
-            # When no specific keyword is given, filter using DEFAULT_KEYWORDS
-            # for additional relevance check on job titles and descriptions
+            # When no specific keyword is given, filter using DEFAULT_KEYWORDS and deadline
             keyword_pattern = r'\b(' + '|'.join(DEFAULT_KEYWORDS) + r')\b'
             filtered_jobs = []
             
             for job in all_jobs:
-                # Check if the job title or category contains relevant keywords
-                if re.search(keyword_pattern, job['title'], re.IGNORECASE):
+                # Check if the job title or category contains relevant keywords and deadline is valid
+                if (re.search(keyword_pattern, job['title'], re.IGNORECASE) and
+                    self._is_deadline_valid(job['deadline_date'])):
                     filtered_jobs.append(job)
 
+        print(f"Jobs after keyword filtering: {len(filtered_jobs)}")
         return {
             "total_jobs": len(all_jobs),
             "filtered_jobs": len(filtered_jobs),
