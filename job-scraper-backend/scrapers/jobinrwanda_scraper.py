@@ -4,6 +4,7 @@ import requests
 import re # Import the regular expressions module
 from bs4 import BeautifulSoup
 from .base_scraper import BaseScraper
+from .keywords import DEFAULT_KEYWORDS
 
 class JobInRwandaScraper(BaseScraper):
     """A scraper for 'jobinrwanda.com' with improved filtering and date extraction."""
@@ -67,11 +68,6 @@ class JobInRwandaScraper(BaseScraper):
             pattern = r'\b' + re.escape(keyword) + r'\b'
         else:
             # For the default IT search, build a pattern of all keywords
-            DEFAULT_KEYWORDS = [
-                'software', 'developer', 'engineer', 'it', 'technical', 
-                'system', 'data', 'computer', 'web', 'programmer', 
-                'cybersecurity', 'network', 'cloud'
-            ]
             pattern = r'\b(' + '|'.join(DEFAULT_KEYWORDS) + r')\b'
         
         # Filter the jobs using the regex pattern (case-insensitive)

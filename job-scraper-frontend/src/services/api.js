@@ -1,6 +1,6 @@
 // src/services/api.js
 
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:5000'; // Adjust this to your backend API URL
 
 export const apiService = {
   async getSites() {
