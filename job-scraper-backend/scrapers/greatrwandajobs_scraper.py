@@ -12,7 +12,7 @@ class GreatRwandaJobsScraper(BaseScraper):
 
     def _is_deadline_valid(self, deadline_date_str):
         """
-        Check if the job deadline is either future or within 1 month from today.
+        Check if the job deadline is either future or within 2 weeks from today.
         Returns True if the deadline is valid, False otherwise.
         """
         if deadline_date_str == "N/A" or not deadline_date_str.strip():
@@ -44,12 +44,12 @@ class GreatRwandaJobsScraper(BaseScraper):
                 print(f"Warning: Could not parse date format: {deadline_date_str}")
                 return True  # Include jobs with unparseable dates
             
-            # Calculate the threshold date (1 month ago from today)
+            # Calculate the threshold date (2 weeks ago from today)
             today = datetime.now()
-            one_month_ago = today - timedelta(days=30)
+            two_weeks_ago = today - timedelta(days=14)
             
-            # Include jobs whose deadline is either in the future or within the last month
-            return deadline_date >= one_month_ago
+            # Include jobs whose deadline is either in the future or within the last 2 weeks
+            return deadline_date >= two_weeks_ago
             
         except Exception as e:
             print(f"Error parsing deadline date '{deadline_date_str}': {e}")

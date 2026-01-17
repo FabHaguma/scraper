@@ -8,6 +8,6 @@ This module contains the default keywords used to filter IT and technology-relat
 DEFAULT_KEYWORDS = [
     'software', 'developer', 'development', 'engineer', 'engineering',
     'system', 'data', 'computer', 'web', 'programmer', 'backend', 'frontend',
-    'cybersecurity', 'network', 'cloud', 'technology', 'it',
-    'programming', 'database', 'analyst', 'information technology'
+    'cybersecurity', 'network', 'cloud', 'technology', 'it', 'ict',
+    'programming', 'database', 'analyst', 'information', 'technology'
 ]

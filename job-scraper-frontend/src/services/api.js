@@ -1,6 +1,6 @@
 // src/services/api.js
 
-const API_BASE_URL = ''; // Local testing: "http://localhost:5000"
+const API_BASE_URL = ''; // Use relative URL - nginx proxies /api to backend
 
 export const apiService = {
   async getSites() {

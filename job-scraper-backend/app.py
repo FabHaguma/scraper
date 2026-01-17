@@ -7,6 +7,8 @@ from flask_cors import CORS
 from scrapers.jobinrwanda_scraper import JobInRwandaScraper
 from scrapers.greatrwandajobs_scraper import GreatRwandaJobsScraper
 from scrapers.unjobs_scraper import UNJobsScraper
+from scrapers.opportunity_scraper import OpportunityScraper
+from scrapers.opphubafrica_scraper import OppHubAfricaScraper
 # To add a new site, you would import its scraper class here
 # from scrapers.newsite_scraper import NewSiteScraper
 
@@ -21,6 +23,8 @@ SCRAPERS = {
     "jobinrwanda": JobInRwandaScraper(),
     "greatrwandajobs": GreatRwandaJobsScraper(),
     "unjobs": UNJobsScraper(),
+    "opportunity": OpportunityScraper(),
+    "opphubafrica": OppHubAfricaScraper(),
     # "newsite": NewSiteScraper(), # Example of how you'd add another
 }
 
