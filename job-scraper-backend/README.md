@@ -1,43 +1,41 @@
 # Job Scraper Backend API
 
-This is a Python Flask backend that scrapes job websites and provides the data through a simple REST API. It is designed to be easily extensible to support multiple job sites.
+A Node.js Express backend that scrapes job websites and provides data through a REST API. Designed to be easily extensible to support multiple job sites.
 
 ## Prerequisites
 
-- Python 3.8+
-- `pip` and `venv` (usually included with Python)
+- Node.js 18+
+- `npm`
 
 ## Setup and Installation
 
-1.  **Clone the repository or create the project files** as described in the structure.
-
-2.  **Create and activate a virtual environment:**
+1.  **Navigate to the project directory:**
 
     ```bash
-    # For macOS/Linux
-    python3 -m venv venv
-    source venv/bin/activate
-
-    # For Windows
-    python -m venv venv
-    ./venv/Scripts/activate
+    cd job-scraper-backend
     ```
 
-3.  **Install the required libraries:**
+2.  **Install the dependencies:**
 
     ```bash
-    pip install -r requirements.txt
+    npm install
     ```
 
 ## Running the Backend
 
-With your virtual environment active, run the Flask application:
+Start the server:
 
 ```bash
-flask run
+npm start
 ```
 
-You should see output indicating that the server is running on `http://127.0.0.1:5000`.
+For development with auto-restart on file changes:
+
+```bash
+npm run dev
+```
+
+The server will start on `http://127.0.0.1:5000`.
 
 ## API Endpoints
 
@@ -48,9 +46,7 @@ You should see output indicating that the server is running on `http://127.0.0.1
 -   **Description:** Returns a JSON list of site names that the backend can scrape.
 -   **Success Response:**
     ```json
-    [
-      "jobinrwanda"
-    ]
+    ["jobinrwanda", "greatrwandajobs", "unjobs", "opportunity", "opphubafrica"]
     ```
 
 ### 2. Scrape a Website
@@ -77,42 +73,41 @@ You should see output indicating that the server is running on `http://127.0.0.1
 
 ## How to Add a New Website to Scrape
 
-This backend is designed for easy extension.
+1.  **Create a New Scraper File:** Inside `src/scrapers/`, create a new file (e.g., `src/scrapers/newSiteScraper.js`).
 
-1.  **Create a New Scraper File:** Inside the `scrapers/` directory, create a new file (e.g., `scrapers/jobinkenya_scraper.py`).
+2.  **Implement the Scraper Class:**
 
-2.  **Implement the Scraper Class:** In the new file, create a class that inherits from `BaseScraper` and implement the `scrape` method. You will need to inspect the HTML of the new website to find the correct tags and classes to use with BeautifulSoup.
+    ```javascript
+    import axios from 'axios';
+    import * as cheerio from 'cheerio';
+    import { BaseScraper } from './baseScraper.js';
+    import { DEFAULT_KEYWORDS } from './keywords.js';
 
-    ```python
-    # scrapers/jobinkenya_scraper.py
-    from .base_scraper import BaseScraper
-    import requests
-    from bs4 import BeautifulSoup
-
-    class JobInKenyaScraper(BaseScraper):
-        def scrape(self, keyword=None):
-            # ... your custom scraping logic for jobinkenya.com goes here ...
-            # ... remember to return the data in the required dictionary format ...
-            pass
-    ```
-
-3.  **Register the New Scraper:** In `app.py`, import your new scraper class and add an instance of it to the `SCRAPERS` dictionary.
-
-    ```python
-    # app.py
-    
-    # ... other imports
-    from scrapers.jobinrwanda_scraper import JobInRwandaScraper
-    from scrapers.jobinkenya_scraper import JobInKenyaScraper # Import the new class
-
-    # ...
-
-    SCRAPERS = {
-        "jobinrwanda": JobInRwandaScraper(),
-        "jobinkenya": JobInKenyaScraper(), # Register the new scraper
+    export class NewSiteScraper extends BaseScraper {
+      async scrape(keyword = null) {
+        // ... your custom scraping logic ...
+        // Return: { total_jobs, unique_companies, jobs: [...] }
+      }
     }
-    
-    # ... rest of the file
     ```
 
-4.  **Restart the Flask server.** Your new site will now be available via the API.
+3.  **Register the New Scraper:** In `src/scrapers/index.js`, import and add it:
+
+    ```javascript
+    import { NewSiteScraper } from './newSiteScraper.js';
+
+    export const SCRAPERS = {
+      // ... existing scrapers ...
+      newsite: new NewSiteScraper(),
+    };
+    ```
+
+4.  **Restart the server.** Your new site will be available via the API.
+
+## Tech Stack
+
+-   **Express** — HTTP server and routing
+-   **Axios** — HTTP client for fetching web pages and APIs
+-   **Cheerio** — HTML parsing (jQuery-like API for Node.js)
+-   **random-useragent** — User agent rotation for stealth scraping
+-   **cors** — Cross-Origin Resource Sharing middleware

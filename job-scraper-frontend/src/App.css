@@ -69,11 +69,11 @@
 .search-container button:hover {
   background-color: #535bf2;
 }
+
 .search-container button:disabled {
   background-color: #494949;
   cursor: not-allowed;
 }
-
 
 /* Results Area */
 .results-container {
@@ -81,7 +81,8 @@
   text-align: left;
 }
 
-.loading-message, .error-message {
+.loading-message,
+.error-message {
   font-size: 1.2em;
   padding: 2rem;
   background-color: #2f2f2f;
@@ -135,7 +136,7 @@
 }
 
 .job-card:hover {
-    transform: translateY(-5px);
+  transform: translateY(-5px);
 }
 
 .job-card h2 {
@@ -147,6 +148,7 @@
   color: #898eff;
   text-decoration: none;
 }
+
 .job-card h2 a:hover {
   text-decoration: underline;
 }
@@ -159,7 +161,7 @@
 .job-company {
   color: #ccc;
   font-style: italic;
-  margin-bottom: 0.75rem !important; /* Use !important to ensure override */
+  margin-bottom: 0.75rem !important;
 }
 
 .job-dates {

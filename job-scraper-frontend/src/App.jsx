@@ -16,13 +16,13 @@ function App() {
     jobData,
     isLoading,
     error,
-    handleSearch
+    handleSearch,
   } = useJobScraper();
 
   return (
     <div className="app-container">
       <Header />
-      
+
       <SearchForm
         sites={sites}
         selectedSite={selectedSite}
@@ -33,11 +33,7 @@ function App() {
         isLoading={isLoading}
       />
 
-      <JobResults
-        jobData={jobData}
-        isLoading={isLoading}
-        error={error}
-      />
+      <JobResults jobData={jobData} isLoading={isLoading} error={error} />
     </div>
   );
 }

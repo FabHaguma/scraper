@@ -17,13 +17,13 @@ export const apiService = {
     if (keyword) {
       params.append('keyword', keyword);
     }
-    
+
     const url = `${API_BASE_URL}/api/scrape?${params.toString()}`;
-    
+
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`An error occurred: ${response.statusText}`);
     }
     return response.json();
-  }
+  },
 };

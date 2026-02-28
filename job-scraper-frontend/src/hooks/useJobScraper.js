@@ -29,7 +29,7 @@ export const useJobScraper = () => {
       setError('Please select a website to scrape.');
       return;
     }
-    
+
     setIsLoading(true);
     setJobData(null);
     setError(null);
@@ -53,6 +53,6 @@ export const useJobScraper = () => {
     jobData,
     isLoading,
     error,
-    handleSearch
+    handleSearch,
   };
 };
