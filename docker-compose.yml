@@ -7,6 +7,12 @@ services:
       - caddy_network
     environment:
       - PORT=5000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000/api/sites"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   frontend_jobscraper:
     image: frontend_jobscraper
@@ -15,7 +21,8 @@ services:
     networks:
       - caddy_network
     depends_on:
-      - backend_jobscraper
+      backend_jobscraper:
+        condition: service_healthy
 
 networks:
   caddy_network:
