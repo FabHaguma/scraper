@@ -2,7 +2,6 @@
 
 import axios from 'axios';
 import { BaseScraper } from './baseScraper.js';
-import { DEFAULT_KEYWORDS } from './keywords.js';
 
 export class OppHubAfricaScraper extends BaseScraper {
   /**
@@ -59,7 +58,7 @@ export class OppHubAfricaScraper extends BaseScraper {
     return null;
   }
 
-  async scrape(keyword = null) {
+  async fetchAll() {
     const BASE_URL = 'https://opphubafrica.com';
     const HEADERS = {
       'User-Agent':
@@ -140,23 +139,7 @@ export class OppHubAfricaScraper extends BaseScraper {
       console.error(`Error parsing embedded JSON: ${err.message}`);
     }
 
-    // --- Filtering ---
-    let filteredJobs;
-    if (keyword) {
-      const pattern = new RegExp(
-        `\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
-        'i'
-      );
-      filteredJobs = allJobs.filter((job) => pattern.test(job.title));
-    } else {
-      const pattern = new RegExp(`\\b(${DEFAULT_KEYWORDS.join('|')})\\b`, 'i');
-      filteredJobs = allJobs.filter((job) => job.title && pattern.test(job.title));
-    }
-
-    return {
-      total_jobs: allJobs.length,
-      unique_companies: companyNames.size,
-      jobs: filteredJobs,
-    };
+    // --- Return raw data for caching ---
+    return { allJobs, companyNames: [...companyNames] };
   }
 }

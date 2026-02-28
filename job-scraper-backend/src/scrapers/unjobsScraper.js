@@ -4,7 +4,6 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import randomUseragent from 'random-useragent';
 import { BaseScraper } from './baseScraper.js';
-import { DEFAULT_KEYWORDS } from './keywords.js';
 
 /**
  * Helper: sleep for a random duration to mimic human behavior.
@@ -48,7 +47,7 @@ export class UNJobsScraper extends BaseScraper {
     };
   }
 
-  async scrape(keyword = null) {
+  async fetchAll() {
     const URLS = [
       'https://unjobs.org/duty_stations/rwanda/1',
       'https://unjobs.org/duty_stations/rwanda/2',
@@ -236,21 +235,6 @@ export class UNJobsScraper extends BaseScraper {
     }
 
     // Filter jobs based on keyword or default IT keywords
-    let pattern;
-    if (keyword) {
-      pattern = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    } else {
-      pattern = new RegExp(`\\b(${DEFAULT_KEYWORDS.join('|')})\\b`, 'i');
-    }
-
-    const filteredJobs = allJobs.filter((job) => pattern.test(job.title));
-
-    console.log(`Filtered jobs (matching criteria): ${filteredJobs.length}`);
-
-    return {
-      total_jobs: allJobs.length,
-      unique_companies: companyNames.size,
-      jobs: filteredJobs,
-    };
+    return { allJobs, companyNames: [...companyNames] };
   }
 }

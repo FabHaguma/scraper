@@ -1,23 +1,21 @@
-version: '3.8'
-
 services:
-  backend:
-    build:
-      context: ./job-scraper-backend
-    container_name: job-scraper-backend
+  backend_jobscraper:
+    image: backend_jobscraper
+    build: ./job-scraper-backend
     restart: unless-stopped
     networks:
-      - default # The default network is used for backend-frontend communication
-
-  frontend:
-    build:
-      context: ./job-scraper-frontend
-    container_name: job-scraper-frontend
-    restart: unless-stopped
-    # No ports are exposed directly. Caddy will connect via the caddy_network.
-    networks:
-      - default
       - caddy_network
+    environment:
+      - PORT=5000
+
+  frontend_jobscraper:
+    image: frontend_jobscraper
+    build: ./job-scraper-frontend
+    restart: unless-stopped
+    networks:
+      - caddy_network
+    depends_on:
+      - backend_jobscraper
 
 networks:
   caddy_network:

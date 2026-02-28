@@ -63,7 +63,7 @@ export class OpportunityScraper extends BaseScraper {
     }
   }
 
-  async scrape(keyword = null) {
+  async fetchAll() {
     const baseUrl = 'https://opportunityapi.ini.rw/api/opportunities';
 
     const params = {
@@ -72,7 +72,7 @@ export class OpportunityScraper extends BaseScraper {
       offset: 0,
       status: 'approved',
       sort: 'default_ranking',
-      q: keyword || '',
+      q: '',
     };
 
     const headers = {
@@ -151,23 +151,30 @@ export class OpportunityScraper extends BaseScraper {
       }
     }
 
-    // --- Filtering Logic ---
+    return { allJobs, companyNames: [...companyNames] };
+  }
+
+  /**
+   * Override filterJobs to also check deadline validity.
+   */
+  filterJobs(allJobs, keyword = null, customKeywords = null) {
+    const filterKeywords = customKeywords || DEFAULT_KEYWORDS;
     let filteredJobs;
     if (keyword) {
-      // API handled keyword search; just filter by deadline
-      filteredJobs = allJobs.filter((job) => this._isDeadlineValid(job.deadline_date));
+      // Single keyword: match title + deadline check
+      const pattern = new RegExp(
+        `\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+        'i'
+      );
+      filteredJobs = allJobs.filter(
+        (job) => pattern.test(job.title) && this._isDeadlineValid(job.deadline_date)
+      );
     } else {
-      // Default: filter for IT keywords + deadline
-      const pattern = new RegExp(`\\b(${DEFAULT_KEYWORDS.join('|')})\\b`, 'i');
+      const pattern = new RegExp(`\\b(${filterKeywords.join('|')})\\b`, 'i');
       filteredJobs = allJobs.filter(
         (job) => pattern.test(job.title) && this._isDeadlineValid(job.deadline_date)
       );
     }
-
-    return {
-      total_jobs: allJobs.length,
-      unique_companies: companyNames.size,
-      jobs: filteredJobs,
-    };
+    return filteredJobs;
   }
 }

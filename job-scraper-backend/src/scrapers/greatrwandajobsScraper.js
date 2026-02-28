@@ -116,7 +116,7 @@ export class GreatRwandaJobsScraper extends BaseScraper {
     }
   }
 
-  async _getCategoryUrls() {
+  async _getAllCategoryUrls() {
     let allCategories = await this._fetchCategoriesFromWebsite();
 
     if (allCategories.length === 0) {
@@ -129,22 +129,19 @@ export class GreatRwandaJobsScraper extends BaseScraper {
       ];
     }
 
-    const keywordPattern = new RegExp(`\\b(${DEFAULT_KEYWORDS.join('|')})\\b`, 'i');
     const urls = [];
 
     for (const category of allCategories) {
-      if (keywordPattern.test(category.name)) {
-        let formattedName = category.name.toLowerCase();
-        formattedName = formattedName.replace(/[^a-z0-9\s/\-]/g, '');
-        formattedName = formattedName.replace(/[\s/]+/g, '-');
-        formattedName = formattedName.replace(/^-+|-+$/g, '');
+      let formattedName = category.name.toLowerCase();
+      formattedName = formattedName.replace(/[^a-z0-9\s/\-]/g, '');
+      formattedName = formattedName.replace(/[\s/]+/g, '-');
+      formattedName = formattedName.replace(/^-+|-+$/g, '');
 
-        const url = `https://www.greatrwandajobs.com/job-categories/newest-jobs/category-${formattedName}-${category.value}`;
-        urls.push(url);
-      }
+      const url = `https://www.greatrwandajobs.com/job-categories/newest-jobs/category-${formattedName}-${category.value}`;
+      urls.push(url);
     }
 
-    console.log(`Found ${urls.length} relevant category URLs:`, urls);
+    console.log(`Built ${urls.length} category URLs for full fetch`);
 
     if (urls.length === 0) {
       urls.push(
@@ -155,7 +152,7 @@ export class GreatRwandaJobsScraper extends BaseScraper {
     return urls;
   }
 
-  async scrape(keyword = null) {
+  async fetchAll() {
     const BASE_URL = 'https://www.greatrwandajobs.com';
     const HEADERS = {
       'User-Agent':
@@ -165,18 +162,7 @@ export class GreatRwandaJobsScraper extends BaseScraper {
     const allJobs = [];
     const companyNames = new Set();
 
-    let urlsToScrape;
-    if (keyword) {
-      const searchUrl = `https://www.greatrwandajobs.com/jobs/?search_keywords=${encodeURIComponent(keyword)}`;
-      urlsToScrape = [searchUrl];
-    } else {
-      urlsToScrape = await this._getCategoryUrls();
-      if (urlsToScrape.length === 0) {
-        urlsToScrape = [
-          'https://www.greatrwandajobs.com/job-categories/newest-jobs/category-computer-it-jobs-in-rwanda-13',
-        ];
-      }
-    }
+    const urlsToScrape = await this._getAllCategoryUrls();
 
     for (const URL of urlsToScrape) {
       console.log(`Scraping URL: ${URL}`);
@@ -300,7 +286,14 @@ export class GreatRwandaJobsScraper extends BaseScraper {
 
     console.log(`Total jobs collected: ${allJobs.length}`);
 
-    // Filter jobs based on relevance and deadline validity
+    return { allJobs, companyNames: [...companyNames] };
+  }
+
+  /**
+   * Override filterJobs to also check deadline validity and category field.
+   */
+  filterJobs(allJobs, keyword = null, customKeywords = null) {
+    const filterKeywords = customKeywords || DEFAULT_KEYWORDS;
     let filteredJobs;
     if (keyword) {
       const pattern = new RegExp(
@@ -313,7 +306,7 @@ export class GreatRwandaJobsScraper extends BaseScraper {
           this._isDeadlineValid(job.deadline_date)
       );
     } else {
-      const keywordPattern = new RegExp(`\\b(${DEFAULT_KEYWORDS.join('|')})\\b`, 'i');
+      const keywordPattern = new RegExp(`\\b(${filterKeywords.join('|')})\\b`, 'i');
       filteredJobs = allJobs.filter(
         (job) =>
           keywordPattern.test(job.title) && this._isDeadlineValid(job.deadline_date)
@@ -321,12 +314,6 @@ export class GreatRwandaJobsScraper extends BaseScraper {
     }
 
     console.log(`Jobs after keyword filtering: ${filteredJobs.length}`);
-
-    return {
-      total_jobs: allJobs.length,
-      filtered_jobs: filteredJobs.length,
-      unique_companies: companyNames.size,
-      jobs: filteredJobs,
-    };
+    return filteredJobs;
   }
 }

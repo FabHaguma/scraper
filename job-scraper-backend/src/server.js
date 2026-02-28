@@ -3,6 +3,8 @@
 import express from 'express';
 import cors from 'cors';
 import { SCRAPERS } from './scrapers/index.js';
+import { DEFAULT_KEYWORDS, DEFAULT_CATEGORIES } from './scrapers/keywords.js';
+import { scrapeCache } from './cache.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,18 +21,37 @@ app.get('/api/sites', (req, res) => {
   res.json(Object.keys(SCRAPERS));
 });
 
+app.get('/api/keywords', (req, res) => {
+  /**
+   * Returns the default keyword categories used for job filtering.
+   * Shape: { SWE: [...], DATA: [...], IT: [...], CYBER: [...] }
+   */
+  res.json(DEFAULT_CATEGORIES);
+});
+
+app.get('/api/cache', (req, res) => {
+  /**
+   * Returns the current cache status for all sites.
+   */
+  res.json(scrapeCache.status());
+});
+
 app.get('/api/scrape', async (req, res) => {
   /**
    * The main scraping endpoint.
    * Requires a 'site' query parameter.
-   * Optionally accepts a 'keyword' query parameter.
+   * Optionally accepts a 'keyword' query parameter (single override).
+   * Optionally accepts a 'keywords' query parameter (comma-separated list
+   * to replace the default keyword list for filtering).
    *
-   * Examples:
-   *   /api/scrape?site=jobinrwanda
-   *   /api/scrape?site=jobinrwanda&keyword=accountant
+   * Uses an in-memory cache (3-hour TTL) to avoid re-fetching the same
+   * site. Only the keyword filtering is re-applied on cached data.
    */
   const siteName = req.query.site;
   const keyword = req.query.keyword || null;
+  const customKeywords = req.query.keywords
+    ? req.query.keywords.split(',').map((k) => k.trim()).filter(Boolean)
+    : null;
 
   if (!siteName) {
     return res.status(400).json({ error: "A 'site' query parameter is required." });
@@ -43,8 +64,29 @@ app.get('/api/scrape', async (req, res) => {
   const scraper = SCRAPERS[siteName];
 
   try {
-    const data = await scraper.scrape(keyword);
-    res.json(data);
+    // Check cache first
+    let rawData = scrapeCache.get(siteName);
+
+    if (!rawData) {
+      // Cache miss — fetch from website
+      console.log(`[Scrape] ${siteName}: fetching from source…`);
+      rawData = await scraper.fetchAll();
+      scrapeCache.set(siteName, rawData);
+    }
+
+    // Apply keyword filtering on the (possibly cached) raw data
+    const { allJobs, companyNames } = rawData;
+    const filteredJobs = scraper.filterJobs(allJobs, keyword, customKeywords);
+
+    const cacheInfo = scrapeCache.status()[siteName];
+
+    res.json({
+      total_jobs: allJobs.length,
+      unique_companies: companyNames.length,
+      jobs: filteredJobs,
+      cached: !!cacheInfo,
+      cache_remaining_minutes: cacheInfo ? cacheInfo.remainingMinutes : 0,
+    });
   } catch (err) {
     console.error(`An error occurred while scraping ${siteName}:`, err);
     res.status(500).json({ error: 'An internal error occurred during scraping.' });

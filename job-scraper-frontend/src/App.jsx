@@ -17,6 +17,22 @@ function App() {
     isLoading,
     error,
     handleSearch,
+    mergedCategories,
+    allCategoryNames,
+    activeCategories,
+    defaultCategories,
+    customCategories,
+    toggleCategory,
+    addKeywordToCategory,
+    removeKeywordFromCategory,
+    createCategory,
+    resetToDefaults,
+    newKeywordInput,
+    setNewKeywordInput,
+    newCategoryInput,
+    setNewCategoryInput,
+    expandedCategory,
+    setExpandedCategory,
   } = useJobScraper();
 
   return (
@@ -31,6 +47,22 @@ function App() {
         setKeyword={setKeyword}
         onSearch={handleSearch}
         isLoading={isLoading}
+        mergedCategories={mergedCategories}
+        allCategoryNames={allCategoryNames}
+        activeCategories={activeCategories}
+        defaultCategories={defaultCategories}
+        customCategories={customCategories}
+        toggleCategory={toggleCategory}
+        addKeywordToCategory={addKeywordToCategory}
+        removeKeywordFromCategory={removeKeywordFromCategory}
+        createCategory={createCategory}
+        resetToDefaults={resetToDefaults}
+        newKeywordInput={newKeywordInput}
+        setNewKeywordInput={setNewKeywordInput}
+        newCategoryInput={newCategoryInput}
+        setNewCategoryInput={setNewCategoryInput}
+        expandedCategory={expandedCategory}
+        setExpandedCategory={setExpandedCategory}
       />
 
       <JobResults jobData={jobData} isLoading={isLoading} error={error} />

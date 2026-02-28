@@ -3,13 +3,12 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { BaseScraper } from './baseScraper.js';
-import { DEFAULT_KEYWORDS } from './keywords.js';
 
 export class JobInRwandaScraper extends BaseScraper {
   /**
    * Scraper for 'jobinrwanda.com' with filtering and date extraction.
    */
-  async scrape(keyword = null) {
+  async fetchAll() {
     const URL = 'https://www.jobinrwanda.com/jobs/all';
     const BASE_URL = 'https://www.jobinrwanda.com';
 
@@ -23,7 +22,7 @@ export class JobInRwandaScraper extends BaseScraper {
       response = await axios.get(URL, { headers: HEADERS, timeout: 15000 });
     } catch (err) {
       console.error(`Error fetching the URL: ${err.message}`);
-      return { total_jobs: 0, unique_companies: 0, jobs: [] };
+      return { allJobs: [], companyNames: [] };
     }
 
     const $ = cheerio.load(response.data);
@@ -68,20 +67,6 @@ export class JobInRwandaScraper extends BaseScraper {
       }
     });
 
-    // --- Filtering Logic ---
-    let pattern;
-    if (keyword) {
-      pattern = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    } else {
-      pattern = new RegExp(`\\b(${DEFAULT_KEYWORDS.join('|')})\\b`, 'i');
-    }
-
-    const filteredJobs = allJobs.filter((job) => pattern.test(job.title));
-
-    return {
-      total_jobs: allJobs.length,
-      unique_companies: companyNames.size,
-      jobs: filteredJobs,
-    };
+    return { allJobs, companyNames: [...companyNames] };
   }
 }

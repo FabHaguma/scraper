@@ -1,12 +1,31 @@
 // src/scrapers/keywords.js
 
 /**
- * Universal keyword definitions for job filtering across all scrapers.
- * Contains the default keywords used to filter IT and technology-related jobs.
+ * Default keyword categories for job filtering across all scrapers.
+ * Each category groups related keywords so users can toggle them
+ * and extend them with their own additions.
+ */
+export const DEFAULT_CATEGORIES = {
+  SWE: [
+    'software', 'developer', 'development', 'engineer', 'engineering',
+    'programmer', 'programming', 'backend', 'frontend', 'web', 'fullstack',
+  ],
+  DATA: [
+    'data', 'database', 'analyst', 'analytics', 'machine learning',
+    'data science', 'big data',
+  ],
+  IT: [
+    'system', 'network', 'cloud', 'it', 'ict', 'information',
+    'technology', 'infrastructure', 'computer', 'devops',
+  ],
+  CYBER: [
+    'cybersecurity', 'security', 'infosec', 'penetration testing',
+  ],
+};
+
+/**
+ * Flat array of all default keywords (used by scrapers as a fallback).
  */
 export const DEFAULT_KEYWORDS = [
-  'software', 'developer', 'development', 'engineer', 'engineering',
-  'system', 'data', 'computer', 'web', 'programmer', 'backend', 'frontend',
-  'cybersecurity', 'network', 'cloud', 'technology', 'it', 'ict',
-  'programming', 'database', 'analyst', 'information', 'technology',
+  ...new Set(Object.values(DEFAULT_CATEGORIES).flat()),
 ];

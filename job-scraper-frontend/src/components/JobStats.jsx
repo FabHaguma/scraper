@@ -2,18 +2,18 @@
 
 const JobStats = ({ jobData }) => {
   return (
-    <div className="stats-display">
-      <div className="stat-item">
-        <h3>{jobData.total_jobs}</h3>
-        <p>Total Jobs Found</p>
+    <div className="stats-grid">
+      <div className="stat-card">
+        <div className="stat-number">{jobData.total_jobs}</div>
+        <div className="stat-label">Total Scanned</div>
       </div>
-      <div className="stat-item">
-        <h3>{jobData.unique_companies}</h3>
-        <p>Unique Companies</p>
+      <div className="stat-card">
+        <div className="stat-number">{jobData.unique_companies}</div>
+        <div className="stat-label">Companies</div>
       </div>
-      <div className="stat-item">
-        <h3>{jobData.jobs.length}</h3>
-        <p>Relevant Jobs Found</p>
+      <div className="stat-card">
+        <div className="stat-number">{jobData.jobs.length}</div>
+        <div className="stat-label">Relevant Matches</div>
       </div>
     </div>
   );
