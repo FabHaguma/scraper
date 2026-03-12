@@ -266,7 +266,7 @@ export class GreatRwandaJobsScraper extends BaseScraper {
           company,
           link,
           category,
-          posted_date: postedDate,
+          published_date: postedDate,
           deadline_date: deadlineDate,
           duty_station: dutyStation,
         };

@@ -182,8 +182,8 @@ export class UNJobsScraper extends BaseScraper {
                 title,
                 company,
                 link,
-                updated_date: updatedDate,
-                closing_date: closingDate,
+                published_date: updatedDate,
+                deadline_date: closingDate,
               });
 
               if (company !== 'N/A') {
