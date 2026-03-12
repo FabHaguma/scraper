@@ -1,6 +1,7 @@
 // src/scrapers/oppHubAfricaScraper.js
 
 import axios from 'axios';
+import * as cheerio from 'cheerio';
 import { BaseScraper } from './baseScraper.js';
 
 export class OppHubAfricaScraper extends BaseScraper {
@@ -59,20 +60,22 @@ export class OppHubAfricaScraper extends BaseScraper {
   }
 
   async fetchAll() {
+    // The main jobs page where listings are displayed
+    const JOBS_URL = 'https://opphubafrica.com/jobs';
     const BASE_URL = 'https://opphubafrica.com';
     const HEADERS = {
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     };
 
-    console.log(`Scraping ${BASE_URL}...`);
+    console.log(`Scraping ${JOBS_URL}...`);
 
     let htmlContent;
     try {
-      const response = await axios.get(BASE_URL, { headers: HEADERS, timeout: 20000 });
+      const response = await axios.get(JOBS_URL, { headers: HEADERS, timeout: 20000 });
       htmlContent = response.data;
     } catch (err) {
-      console.error(`Error fetching ${BASE_URL}: ${err.message}`);
+      console.error(`Error fetching ${JOBS_URL}: ${err.message}`);
       return { total_jobs: 0, unique_companies: 0, jobs: [] };
     }
 
@@ -80,63 +83,56 @@ export class OppHubAfricaScraper extends BaseScraper {
     const companyNames = new Set();
 
     try {
-      // Extract the 'opportunities' JSON array from the embedded script
-      let match = htmlContent.match(/opportunities:\s*(\[.*?\])\s*(?:,?\s*\n|,\s*page)/s);
+      const $ = cheerio.load(htmlContent);
+      const articles = $('article');
+      console.log(`Found ${articles.length} job articles`);
 
-      if (!match) {
-        // Fallback regex
-        match = htmlContent.match(/opportunities:\s*(\[{.*}\]),/);
-      }
+      articles.each((i, el) => {
+        const titleEl = $(el).find('h2, h3, h4').first();
+        const title = titleEl.text().trim();
+        const companyEl = titleEl.next();
+        const company = companyEl.length ? companyEl.text().trim() : 'Unknown';
+        
+        let linkPath = $(el).find('a').last().attr('href') || '';
+        let link = linkPath;
+        if (linkPath && !linkPath.startsWith('http')) {
+           link = `${BASE_URL}${linkPath}`;
+        }
 
-      if (match) {
-        const rawJson = match[1];
-        const opportunities = JSON.parse(rawJson);
-        console.log(`Found ${opportunities.length} raw opportunities`);
+        const spans = [];
+        $(el).find('span').each((j, span) => {
+           const t = $(span).text().trim();
+           if(t) spans.push(t);
+        });
+        
+        const deadlineStr = spans.length > 0 ? spans[0] : '';
+        const location = spans.length > 1 ? spans[spans.length - 1] : 'Unknown';
 
-        for (const item of opportunities) {
-          // Only process jobs
-          if (item.type !== 'job') continue;
-
-          const jobId = item.id;
-          const title = item.title;
-          const company = item.company_name || 'Unknown';
-
-          let link = item.url;
-          if (!link) {
-            const slug = item.slug;
-            if (slug) {
-              link = `${BASE_URL}/jobs/${slug}`;
-            } else if (jobId) {
-              link = `${BASE_URL}/jobs/${jobId}`;
-            }
-          }
-
-          const location = item.location || 'Unknown';
-          const deadlineStr = item.deadline || 'N/A';
-
-          let deadlineDate;
+        let deadlineDate;
+        if (deadlineStr) {
           const parsedDate = this._parseRelativeDate(deadlineStr);
           if (parsedDate) {
             deadlineDate = parsedDate.toISOString().split('T')[0];
           } else {
             deadlineDate = deadlineStr;
           }
+        } else {
+          deadlineDate = 'N/A';
+        }
 
+        if (title) {
           allJobs.push({
             title,
             company,
             link,
             location,
-            deadline_date: deadlineDate || 'N/A',
+            published_date: deadlineDate,
           });
-
           companyNames.add(company);
         }
-      } else {
-        console.log('Regex match failed for opportunities data.');
-      }
+      });
     } catch (err) {
-      console.error(`Error parsing embedded JSON: ${err.message}`);
+      console.error(`Error parsing HTML: ${err.message}`);
     }
 
     // --- Return raw data for caching ---
