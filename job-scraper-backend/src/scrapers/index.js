@@ -13,7 +13,7 @@ import { OppHubAfricaScraper } from './oppHubAfricaScraper.js';
 export const SCRAPERS = {
   jobinrwanda: new JobInRwandaScraper(),
   greatrwandajobs: new GreatRwandaJobsScraper(),
-  unjobs: new UNJobsScraper(),
+  // unjobs: new UNJobsScraper(),
   opportunity: new OpportunityScraper(),
   opphubafrica: new OppHubAfricaScraper(),
 };
