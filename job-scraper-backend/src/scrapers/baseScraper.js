@@ -28,6 +28,10 @@ export class BaseScraper {
    * @returns {Array} Filtered jobs
    */
   filterJobs(allJobs, keyword = null, customKeywords = null) {
+    if (keyword && keyword.toLowerCase() === 'all') {
+      return allJobs;
+    }
+
     const filterKeywords = customKeywords || DEFAULT_KEYWORDS;
     let pattern;
     if (keyword) {
