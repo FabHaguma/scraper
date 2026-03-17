@@ -2,9 +2,9 @@
 
 import { JobInRwandaScraper } from './jobinrwandaScraper.js';
 import { GreatRwandaJobsScraper } from './greatrwandajobsScraper.js';
-import { UNJobsScraper } from './unjobsScraper.js';
 import { OpportunityScraper } from './opportunityScraper.js';
 import { OppHubAfricaScraper } from './oppHubAfricaScraper.js';
+// import { UNJobsScraper } from './unjobsScraper.js';
 
 /**
  * Scraper registry - maps site names to scraper instances.
@@ -13,7 +13,7 @@ import { OppHubAfricaScraper } from './oppHubAfricaScraper.js';
 export const SCRAPERS = {
   jobinrwanda: new JobInRwandaScraper(),
   greatrwandajobs: new GreatRwandaJobsScraper(),
-  // unjobs: new UNJobsScraper(),
   opportunity: new OpportunityScraper(),
   opphubafrica: new OppHubAfricaScraper(),
+  // unjobs: new UNJobsScraper(),
 };
