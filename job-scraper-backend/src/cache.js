@@ -31,7 +31,7 @@ class ScrapeCache {
     }
 
     console.log(
-      `[Cache] ${siteName}: HIT (age ${(age / 60000).toFixed(1)} min, ${entry.data.allJobs.length} jobs)`
+      `[Cache] ${siteName}: HIT (age ${(age / 60000).toFixed(1)} min, ${entry.data?.allJobs?.length ?? 0} jobs)`
     );
     return entry.data;
   }
@@ -43,7 +43,7 @@ class ScrapeCache {
    */
   set(siteName, data) {
     this.store.set(siteName, { data, timestamp: Date.now() });
-    console.log(`[Cache] ${siteName}: stored ${data.allJobs.length} jobs`);
+    console.log(`[Cache] ${siteName}: stored ${data?.allJobs?.length ?? 0} jobs`);
   }
 
   /**
@@ -65,7 +65,7 @@ class ScrapeCache {
       const ageMin = (Date.now() - entry.timestamp) / 60000;
       const remainingMin = Math.max(0, (this.ttlMs - (Date.now() - entry.timestamp)) / 60000);
       entries[site] = {
-        jobs: entry.data.allJobs.length,
+        jobs: entry.data?.allJobs?.length ?? 0,
         ageMinutes: Math.round(ageMin),
         remainingMinutes: Math.round(remainingMin),
       };

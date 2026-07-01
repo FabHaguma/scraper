@@ -95,13 +95,13 @@ export class OpportunityScraper extends BaseScraper {
 
       if (response.status !== 200) {
         console.log(`Failed to fetch data: Status ${response.status}`);
-        return { total_jobs: 0, unique_companies: 0, jobs: [] };
+        return { allJobs: [], companyNames: [] };
       }
 
       data = response.data;
     } catch (err) {
       console.error(`Error fetching from API: ${err.message}`);
-      return { total_jobs: 0, unique_companies: 0, jobs: [] };
+      return { allJobs: [], companyNames: [] };
     }
 
     // The API returns a list directly or a dict with results/data/items

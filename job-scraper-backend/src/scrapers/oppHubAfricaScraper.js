@@ -76,7 +76,7 @@ export class OppHubAfricaScraper extends BaseScraper {
       htmlContent = response.data;
     } catch (err) {
       console.error(`Error fetching ${JOBS_URL}: ${err.message}`);
-      return { total_jobs: 0, unique_companies: 0, jobs: [] };
+      return { allJobs: [], companyNames: [] };
     }
 
     const allJobs = [];
